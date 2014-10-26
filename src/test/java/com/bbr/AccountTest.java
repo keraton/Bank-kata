@@ -2,11 +2,15 @@ package com.bbr;
 
 import org.junit.Test;
 
+import java.time.Instant;
+
+import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AccountTest {
 
     private static final Amount AMOUNT_TEN = new Amount(10.0);
+    private static final Amount AMOUNT_FIVE = new Amount(5.0);
 
     // 1) Deposit and withdrawal
     @Test
@@ -41,16 +45,18 @@ public class AccountTest {
 
     // 3) Account statement (date, amount, balance)
     @Test
-    public void given_account_with_deposit_10_when_get_statement_then_return_date_amount_balance() {
-        Account account = new Account();
+    public void given_account_with_deposit_10_when_get_statement_then_return_date_amount_balance() throws InterruptedException {
+        Account account = new Account().withdrawal(AMOUNT_FIVE);
+        sleep(1);
+        Instant instantToTest = Instant.now();
+        DateTimeService.setInstant(instantToTest);
 
         account.deposit(AMOUNT_TEN);
 
-        // TODO
-        account.consultLastStatement();     // Amount
-        account.calculateBalance();         // balance
-        account.consultLastOperationDate(); // Date
-
-
+        assertThat(account.consultLastStatement()).isEqualTo(AMOUNT_TEN);
+        assertThat(account.consultLastBalance()).isEqualTo(AMOUNT_FIVE);
+        assertThat(account.consultLastHistory()).isEqualTo(instantToTest);
     }
+
+
 }

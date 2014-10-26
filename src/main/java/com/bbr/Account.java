@@ -1,6 +1,6 @@
 package com.bbr;
 
-import com.bbr.repository.AmountRepository;
+import java.time.Instant;
 
 public class Account {
 
@@ -8,18 +8,18 @@ public class Account {
     final AmountRepository withdrawalRepository = new AmountRepository();
 
     public Account deposit(Amount amount) {
-        this.depositRepository.add(amount);
+        this.depositRepository.add(new Amount(amount));
         return this;
     }
 
     public Account withdrawal(Amount amount) {
-        this.withdrawalRepository.add(amount);
+        this.withdrawalRepository.add(new Amount(amount));
         return this;
     }
 
     public void send(Account account, Amount amount) {
-        this.withdrawal(amount);
-        account.deposit(amount);
+        this.withdrawal(new Amount(amount));
+        account.deposit(new Amount(amount));
     }
 
     public Amount consultLastDeposit() {
@@ -28,5 +28,21 @@ public class Account {
 
     public Amount consultLastWithdrawal() {
         return withdrawalRepository.peek();
+    }
+
+    public Amount consultLastStatement() {
+        if (depositRepository.isAfter(withdrawalRepository))
+            return depositRepository.peek();
+        return withdrawalRepository.peek();
+    }
+
+    public Amount consultLastBalance() {
+        return depositRepository.minus(withdrawalRepository);
+    }
+
+    public Instant consultLastHistory() {
+        if (depositRepository.isAfter(withdrawalRepository))
+            return depositRepository.getLastHistory();
+        return withdrawalRepository.getLastHistory();
     }
 }
